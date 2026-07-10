@@ -1,31 +1,23 @@
 using MassTransit;
-using Microsoft.Extensions.Logging;
+using Serilog;
 using Shop.Events;
 
 namespace Seller.Application.Consumers;
 
 public class OrderCompletedConsumer : IConsumer<OrderCompletedEvent>
 {
-    private readonly ILogger<OrderCompletedConsumer> _logger;
-
-    public OrderCompletedConsumer(ILogger<OrderCompletedConsumer> logger)
-    {
-        _logger = logger;
-    }
-
     public Task Consume(ConsumeContext<OrderCompletedEvent> context)
     {
-        var eventMessage = context.Message;
+        var evt = context.Message;
 
-        _logger.LogInformation(
-            "[Seller] Order {OrderId} has been completed at {CompletedAt}. " +
-            "Notification sent to the merchant.",
-            eventMessage.OrderId, eventMessage.CompletedAt);
+        Log.Information("收到订单完成事件: OrderId={OrderId}, CompletedAt={CompletedAt}",
+            evt.OrderId, evt.CompletedAt);
 
-        Console.WriteLine($"[Seller] === Merchant Notification ===");
-        Console.WriteLine($"[Seller] Order {eventMessage.OrderId} completed at {eventMessage.CompletedAt:O}");
-        Console.WriteLine($"[Seller] Please prepare the order for shipping.");
-        Console.WriteLine($"[Seller] ==============================");
+        // 模拟商家通知（实际场景：发短信/邮件/推送）
+        Log.Information("=== 商家通知 ===");
+        Log.Information("订单 {OrderId} 已完成，请准备发货", evt.OrderId);
+        Log.Information("完成时间: {CompletedAt:O}", evt.CompletedAt);
+        Log.Information("=================");
 
         return Task.CompletedTask;
     }
