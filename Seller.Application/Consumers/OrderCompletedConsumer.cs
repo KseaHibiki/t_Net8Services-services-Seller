@@ -24,6 +24,7 @@ public class OrderCompletedConsumer : IConsumer<OrderCompletedEvent>
 
         var notification = SellerNotification.Create(evt.OrderId, evt.CompletedAt);
         await _notificationRepository.AddAsync(notification, context.CancellationToken);
+        await _notificationRepository.SaveChangesAsync(context.CancellationToken);
 
         Log.Information("卖家通知已持久化: NotificationId={NotificationId}, OrderId={OrderId}",
             notification.Id, evt.OrderId);

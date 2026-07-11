@@ -22,4 +22,9 @@ public class SellerNotificationRepository : ISellerNotificationRepository
     {
         return await _context.Notifications.AnyAsync(n => n.OrderId == orderId, cancellationToken);
     }
+
+    public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        await _context.SaveChangesAsync(cancellationToken);
+    }
 }
