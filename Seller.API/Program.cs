@@ -1,6 +1,9 @@
 using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Seller.Application.Consumers;
+using Seller.Domain.Interfaces;
+using Seller.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,9 +23,24 @@ builder.Host.UseSerilog();
 
 builder.Services.AddControllers();
 
-// MassTransit (no database for Seller)
+// Database
+var connectionString = builder.Configuration.GetConnectionString("seller")
+    ?? "Server=localhost;Port=3308;Database=seller_db;User=root;Password=114514;";
+builder.Services.AddDbContext<SellerDbContext>(options =>
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+
+// Repositories
+builder.Services.AddScoped<ISellerNotificationRepository, SellerNotificationRepository>();
+
+// MassTransit with Transactional Outbox
 builder.Services.AddMassTransit(x =>
 {
+    x.AddEntityFrameworkOutbox<SellerDbContext>(o =>
+    {
+        o.QueryDelay = TimeSpan.FromSeconds(1);
+        o.UseMySql();
+    });
+
     x.AddConsumer<OrderCompletedConsumer>();
 
     x.UsingRabbitMq((context, cfg) =>
@@ -38,6 +56,14 @@ builder.Services.AddMassTransit(x =>
 });
 
 var app = builder.Build();
+
+// Auto-migrate
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<SellerDbContext>();
+    db.Database.EnsureCreated();
+    Log.Information("数据库初始化完成 (seller_db)");
+}
 
 app.UseSerilogRequestLogging();
 
