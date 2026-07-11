@@ -1,5 +1,5 @@
 # Seller.API — 商家通知微服务
-
+Net
 商家通知微服务，负责在订单完成后通知商家准备发货。服务本身无 HTTP 端点，仅通过 MassTransit 消费 RabbitMQ 事件，属于纯消息驱动服务。
 
 ## 架构
