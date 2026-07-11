@@ -55,11 +55,26 @@ Net
 |---|---|---|
 | `seller-order-completed-queue` | `OrderCompletedConsumer` | 监听订单完成事件 |
 
+## 环境配置
+
+服务通过 `appsettings.json` + `appsettings.{Environment}.json` 实现多环境配置，由 `ASPNETCORE_ENVIRONMENT` 环境变量控制。
+
+| 配置文件 | 适用环境 | 日志级别 | 数据库连接 |
+|----------|:--------:|:--------:|:----------:|
+| `appsettings.json` | 所有环境 | Information (基础) | `localhost:3308` |
+| `appsettings.Development.json` | Development | Debug | `localhost:3308` |
+| `appsettings.Production.json` | Production | Warning | Docker 内部 (环境变量覆写) |
+
+> `docker-compose.yml` 中设置 `ASPNETCORE_ENVIRONMENT=Development`，`docker-compose.prod.yml` 中设置为 `Production`。
+
 ## 本地运行
 
 ```bash
-# 仅依赖 RabbitMQ (5672)
+# Development 模式（默认）
 dotnet run --project services/Seller/src/Seller.API/Seller.API.csproj
+
+# 或指定环境
+ASPNETCORE_ENVIRONMENT=Development dotnet run --project services/Seller/src/Seller.API/Seller.API.csproj
 ```
 
 > 无 Swagger 页面，无 HTTP 端口。通过 `docker logs seller-api` 或日志文件 `logs/seller-api-YYYYMMDD.log` 查看通知记录。
